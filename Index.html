@@ -1,1 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#071426">
+<meta name="description" content="Vission AI Chat - Your intelligent AI assistant powered by Google Gemini.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
+<title>Vission AI Chat</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #071426;
+  --panel: #0d2038;
+  --card: #102944;
+  --text: #f5f8ff;
+  --muted: #9aacc4;
+  --cyan: #16bdf0;
+  --gold: #e8bd55;
+  --border: #203b58;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f3f7fc;
+    --panel: #ffffff;
+    --card: #edf4fa;
+    --text: #10233b;
+    --muted: #63758b;
+    --cyan: #008fbd;
+    --gold: #a77915;
+    --border: #dce5ee;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+}
+
+button, textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app {
+  width: 100%;
+  max-width: 950px;
+  margin: auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+}
+
+header {
+  padding: 19px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 21px;
+  color: var(--cyan);
+}
+
+.brand small {
+  display: block;
+  color: var(--muted);
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.small-btn {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 9px 11px;
+  font-size: 12px;
+}
+
+main {
+  flex: 1;
+  padding: 22px 0;
+}
+
+.welcome {
+  text-align: center;
+  margin: 65px auto 35px;
+}
+
+.logo {
+  width: 65px;
+  height: 65px;
+  margin: auto;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  border: 1px solid var(--gold);
+  border-radius: 20px;
+  font-size: 30px;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.welcome h2 {
+  font-size: 25px;
+  margin: 18px 0 8px;
+}
+
+.welcome p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.suggestion {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 15px 12px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.suggestion:hover {
+  border-color: var(--cyan);
+}
+
+#chat {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+}
+
+.message.user {
+  align-items: flex-end;
+}
+
+.bubble {
+  max-width: 88%;
+  padding: 13px 15px;
+  border-radius: 15px;
+  line-height: 1.7;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.user .bubble {
+  background: #075b83;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.assistant .bubble {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+.message-actions {
+  margin-top: 7px;
+}
+
+.copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 5px 9px;
+  font-size: 11px;
+}
+
+.bubble pre {
+  background: #030d19;
+  color: #d7eaff;
+  border-radius: 9px;
+  padding: 13px;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.bubble code {
+  font-family: monospace;
+}
+
+.bubble :not(pre) > code {
+  background: var(--card);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.bubble ul {
+  padding-left: 22px;
+}
+
+.code-box {
+  margin: 12px 0;
+  background: #030d19;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.code-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  color: #b9d6ee;
+  font-size: 11px;
+  border-bottom: 1px solid #20354c;
+}
+
+.code-box pre {
+  margin: 0;
+  border-radius: 0;
+}
+
+.typing {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 10px 0;
+}
+
+.typing span {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: .2; }
+}
+
+.composer {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding: 12px 0 15px;
+  border-top: 1px solid var(--border);
+}
+
+.input-box {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+  padding: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+}
+
+textarea {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  min-height: 42px;
+  max-height: 130px;
+  padding: 10px 4px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+textarea::placeholder {
+  color: var(--muted);
+}
+
+.send-btn {
+  border: none;
+  border-radius: 10px;
+  background: var(--cyan);
+  color: #001421;
+  font-weight: bold;
+  padding: 12px 17px;
+}
+
+.send-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+footer {
+  text-align: center;
+  padding: 15px 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+@media(max-width:480px) {
+  .welcome {
+    margin-top: 40px;
+  }
+
+  .welcome h2 {
+    font-size: 22px;
+  }
+
+  .bubble {
+    max-width: 94%;
+  }
+
+  .suggestions {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <div class="brand">
+    <h1>Vission AI Chat</h1>
+    <small>by Bright Vission Digital Design</small>
+  </div>
+
+  <div class="header-actions">
+    <button class="small-btn" id="newChat">+ New chat</button>
+  </div>
+</header>
+
+<main>
+
+<section class="welcome" id="welcome">
+
+  <div class="logo">V</div>
+
+  <h2>How can I help you today?</h2>
+
+  <p>
+    Welcome to Vission AI Chat.<br>
+    Your intelligent assistant powered by Google Gemini.
+  </p>
+
+  <div class="suggestions">
+
+    <button class="suggestion">
+      What services do you offer?
+    </button>
+
+    <button class="suggestion">
+      Help me design a flyer for my shop.
+    </button>
+
+    <button class="suggestion">
+      Teach me HTML and CSS.
+    </button>
+
+    <button class="suggestion">
+      Give me ideas to grow my business.
+    </button>
+
+  </div>
+
+</section>
+
+<div id="chat"></div>
+<div id="typing"></div>
+
+</main>
+
+<div class="composer">
+
+  <div class="input-box">
+
+    <textarea
+      id="input"
+      placeholder="Message Vission AI..."
+      rows="1"
+    ></textarea>
+
+    <button class="send-btn" id="send">Send</button>
+
+  </div>
+
+</div>
+
+<footer>
+  Created by Shaibu Abdul Basit · Bright Vission Digital Design.
+</footer>
+
+</div>
+
+<script>
+
+const API_URL =
+"https://vission-ai-chat.mrshaibu776.workers.dev";
+
+const STORAGE_KEY = "vission_ai_chat_history";
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+const sendBtn = document.getElementById("send");
+const typing = document.getElementById("typing");
+const welcome = document.getElementById("welcome");
+
+let messages = [];
+let busy = false;
+
+function saveHistory() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(messages)
+    );
+  } catch (error) {
+    console.warn("Could not save chat history.");
+  }
+}
+
+function loadHistory() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+      const data = JSON.parse(saved);
+
+      if (
+        Array.isArray(data) &&
+        data.length <= 100 &&
+        data.every(m =>
+          m &&
+          ["user", "assistant"].includes(m.role) &&
+          typeof m.content === "string"
+        )
+      ) {
+        messages = data;
+      }
+    }
+  } catch (error) {
+    messages = [];
+  }
+}
+
+function escapeHTML(text) {
+  return text.replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function renderMarkdown(text) {
+
+  const codeBlocks = [];
+
+  let safe = text.replace(
+    /```([\w+-]*)\n?([\s\S]*?)```/g,
+    (match, language, code) => {
+
+      const index = codeBlocks.length;
+
+      codeBlocks.push({
+        language: language || "Code",
+        code: escapeHTML(code)
+      });
+
+      return `CODEBLOCK${index}END`;
+    }
+  );
+
+  safe = escapeHTML(safe);
+
+  safe = safe.replace(
+    /`([^`\n]+)`/g,
+    "<code>$1</code>"
+  );
+
+  safe = safe.replace(
+    /\*\*(.*?)\*\*/g,
+    "<strong>$1</strong>"
+  );
+
+  const lines = safe.split("\n");
+  const output = [];
+  let inList = false;
+
+  for (const line of lines) {
+
+    const item = line.match(/^\s*[-*]\s+(.+)/);
+
+    if (item) {
+      if (!inList) {
+        output.push("<ul>");
+        inList = true;
+      }
+
+      output.push("<li>" + item[1] + "</li>");
+      continue;
+    }
+
+    if (inList) {
+      output.push("</ul>");
+      inList = false;
+    }
+
+    if (!line.trim()) {
+      continue;
+    }
+
+    const codeMatch = line.match(
+      /^CODEBLOCK(\d+)END$/
+    );
+
+    if (codeMatch) {
+      const block = codeBlocks[Number(codeMatch[1])];
+
+      output.push(
+        `<div class="code-box">
+          <div class="code-head">
+            <span>${escapeHTML(block.language)}</span>
+            <button class="copy-btn code-copy"
+              data-code="${escapeHTML(block.code)}">
+              Copy code
+            </button>
+          </div>
+          <pre><code>${block.code}</code></pre>
+        </div>`
+      );
+
+    } else {
+      output.push("<p>" + line + "</p>");
+    }
+  }
+
+  if (inList) {
+    output.push("</ul>");
+  }
+
+  return output.join("");
+}
+
+function render() {
+
+  welcome.style.display =
+    messages.length ? "none" : "block";
+
+  chat.innerHTML = "";
+
+  messages.forEach(message => {
+
+    const row = document.createElement("div");
+
+    row.className =
+      "message " + message.role;
+
+    const bubble = document.createElement("div");
+
+    bubble.className = "bubble";
+
+    if (message.role === "assistant") {
+      bubble.innerHTML =
+        renderMarkdown(message.content);
+    } else {
+      bubble.textContent = message.content;
+    }
+
+    row.appendChild(bubble);
+
+    if (message.role === "assistant") {
+
+      const actions = document.createElement("div");
+
+      actions.className = "message-actions";
+
+      const copy = document.createElement("button");
+
+      copy.className = "copy-btn";
+      copy.textContent = "Copy response";
+
+      copy.onclick = () =>
+        copyText(message.content, copy);
+
+      actions.appendChild(copy);
+      row.appendChild(actions);
+    }
+
+    chat.appendChild(row);
+  });
+
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth"
+  });
+}
+
+async function copyText(text, button) {
+
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = "Copied!";
+  } catch (error) {
+    button.textContent = "Copy unavailable";
+  }
+
+  setTimeout(() => {
+    button.textContent =
+      button.classList.contains("code-copy")
+        ? "Copy code"
+        : "Copy response";
+  }, 1800);
+}
+
+document.addEventListener("click", event => {
+
+  const button = event.target.closest(".code-copy");
+
+  if (button) {
+    const code = button.dataset.code || "";
+    copyText(code, button);
+  }
+
+});
+
+async function sendMessage(text) {
+
+  text = text.trim();
+
+  if (!text || busy) return;
+
+  messages.push({
+    role: "user",
+    content: text
+  });
+
+  busy = true;
+
+  input.value = "";
+  input.style.height = "auto";
+
+  sendBtn.disabled = true;
+
+  typing.innerHTML =
+    '<div class="typing">Vission AI is thinking<span>...</span></div>';
+
+  saveHistory();
+  render();
+
+  try {
+
+    const response = await fetch(API_URL, {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        messages: messages
+      })
+
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.reply) {
+      throw new Error(
+        result.error || "AI service unavailable."
+      );
+    }
+
+    messages.push({
+      role: "assistant",
+      content: result.reply
+    });
+
+  } catch (error) {
+
+    messages.push({
+      role: "assistant",
+      content:
+        "Sorry, I couldn't connect to the AI service. Please check your internet connection and try again.\n\nError: " +
+        error.message
+    });
+
+  } finally {
+
+    busy = false;
+    sendBtn.disabled = false;
+    typing.innerHTML = "";
+
+    saveHistory();
+    render();
+
+  }
+}
+
+sendBtn.addEventListener("click", () => {
+  sendMessage(input.value);
+});
+
+input.addEventListener("keydown", event => {
+
+  if (
+    event.key === "Enter" &&
+    !event.shiftKey
+  ) {
+    event.preventDefault();
+    sendMessage(input.value);
+  }
+
+});
+
+input.addEventListener("input", () => {
+
+  input.style.height = "auto";
+
+  input.style.height =
+    Math.min(input.scrollHeight, 130) + "px";
+
+});
+
+document.getElementById("newChat")
+  .addEventListener("click", () => {
+
+    if (busy) return;
+
+    messages = [];
+
+    saveHistory();
+    render();
+
+    input.focus();
+  });
+
+document.querySelectorAll(".suggestion")
+  .forEach(button => {
+
+    button.addEventListener("click", () => {
+      sendMessage(button.textContent);
+    });
+
+  });
+
+loadHistory();
+render();
+
+</script>
+
+</body>
+  </html>
